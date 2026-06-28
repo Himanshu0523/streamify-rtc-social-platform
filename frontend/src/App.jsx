@@ -1,0 +1,178 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+
+import HomePage from "./pages/HomePage.jsx";
+import SignUpPage from "./pages/SignUpPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import NotificationsPage from "./pages/NotificationsPage.jsx";
+import FriendsPage from "./pages/FriendsPage.jsx";
+import CallPage from "./pages/CallPage.jsx";
+import ChatPage from "./pages/ChatPage.jsx";
+import OnboardingPage from "./pages/OnboardingPage.jsx";
+
+import { Toaster } from "react-hot-toast";
+
+import Layout from "./components/Layout.jsx";
+import PageLoader from "./components/PageLoader.jsx";
+
+import useAuthUser from "./hooks/useAuthUser.js";
+import { useThemeStore } from "./store/useThemeStore.js";
+
+const App = () => {
+  const { isLoading, authUser } = useAuthUser();
+  const { theme } = useThemeStore();
+
+  const isAuthenticated = Boolean(authUser);
+  const isOnboarded = authUser?.isOnboarded;
+
+  if (isLoading) return <PageLoader />;
+
+  return (
+    <div className="h-screen" data-theme={theme}>
+      <Routes>
+        {/* Home */}
+        <Route
+          path="/"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={true}>
+                <HomePage />
+              </Layout>
+            ) : (
+              <Navigate
+                to={!isAuthenticated ? "/login" : "/onboarding"}
+                replace
+              />
+            )
+          }
+        />
+
+        {/* Friends */}
+        <Route
+          path="/friends"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={true}>
+                <FriendsPage />
+              </Layout>
+            ) : (
+              <Navigate
+                to={!isAuthenticated ? "/login" : "/onboarding"}
+                replace
+              />
+            )
+          }
+        />
+
+        {/* Notifications */}
+        <Route
+          path="/notifications"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={true}>
+                <NotificationsPage />
+              </Layout>
+            ) : (
+              <Navigate
+                to={!isAuthenticated ? "/login" : "/onboarding"}
+                replace
+              />
+            )
+          }
+        />
+
+        {/* Chat */}
+        <Route
+          path="/chat/:id"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <Layout showSidebar={false}>
+                <ChatPage />
+              </Layout>
+            ) : (
+              <Navigate
+                to={!isAuthenticated ? "/login" : "/onboarding"}
+                replace
+              />
+            )
+          }
+        />
+
+        {/* Video Call */}
+        <Route
+          path="/call/:id"
+          element={
+            isAuthenticated && isOnboarded ? (
+              <CallPage />
+            ) : (
+              <Navigate
+                to={!isAuthenticated ? "/login" : "/onboarding"}
+                replace
+              />
+            )
+          }
+        />
+
+        {/* Onboarding */}
+        <Route
+          path="/onboarding"
+          element={
+            isAuthenticated ? (
+              isOnboarded ? (
+                <Navigate to="/" replace />
+              ) : (
+                <OnboardingPage />
+              )
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        {/* Login */}
+        <Route
+          path="/login"
+          element={
+            !isAuthenticated ? (
+              <LoginPage />
+            ) : (
+              <Navigate to={isOnboarded ? "/" : "/onboarding"} replace />
+            )
+          }
+        />
+
+        {/* Signup */}
+        <Route
+          path="/signup"
+          element={
+            !isAuthenticated ? (
+              <SignUpPage />
+            ) : (
+              <Navigate to={isOnboarded ? "/" : "/onboarding"} replace />
+            )
+          }
+        />
+
+        {/* 404 */}
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to={
+                !isAuthenticated
+                  ? "/login"
+                  : isOnboarded
+                  ? "/"
+                  : "/onboarding"
+              }
+              replace
+            />
+          }
+        />
+      </Routes>
+
+      <Toaster position="top-right" />
+    </div>
+  );
+};
+
+export default App;
